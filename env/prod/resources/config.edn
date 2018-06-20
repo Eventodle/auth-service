@@ -1,0 +1,3 @@
+{:prod true
+ :database-url "postgresql://db/auth_service?user=auth&password=auth"
+ :port 3000}

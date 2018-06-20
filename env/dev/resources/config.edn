@@ -1,0 +1,4 @@
+{
+ ;; :database-url "postgresql://localhost:5455/auth_service?user=auth&password=auth"
+  :database-url "postgresql://db/auth_service?user=auth&password=auth"
+}

@@ -1,0 +1,27 @@
+version: '3.6'
+networks:
+  backend:
+
+services:
+  auth-service:
+    networks:
+      - backend
+    build: .
+    ports:
+      - "3005:3000"
+    depends_on:
+      - db
+    environment:
+      #- DATABASE_URL="postgresql://host.docker.internal/auth_service?user=auth&password=auth"
+      - DATABASE_URL="postgresql://db/auth_service?user=auth&password=auth"
+
+  db:
+    networks:
+      - backend
+    image: postgres
+    environment:
+      - POSTGRES_DB=auth_service
+      - POSTGRES_USER=auth
+      - POSTGRES_PASSWORD=auth
+    ports:
+      - "5455:5432"
