@@ -1,0 +1,9 @@
+FROM clojure
+
+WORKDIR /app
+
+COPY ./project.clj /app
+
+COPY . /app
+
+EXPOSE 3000

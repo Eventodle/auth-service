@@ -1,0 +1,29 @@
+version: '3.6'
+networks:
+  backend:
+
+services:
+  auth-service:
+    networks:
+      - backend
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    command: java -jar /auth-service/app.jar 
+    ports:
+      - "3005:3000"
+    depends_on:
+      - db
+    env_file:
+      - .env
+
+  db:
+    networks:
+      - backend
+    image: postgres
+    env_file:
+      - .env
+    volumes:
+      - ../data:/var/lib/postgresql/data
+    ports:
+      - "5455:5432"
