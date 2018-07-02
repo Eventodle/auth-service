@@ -9,7 +9,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.prod
-    command: java -jar /auth-service/app.jar 
+    command: bash -c "java -jar target/uberjar/<app>.jar migrate && java -jar /auth-service/app.jar"
     ports:
       - "3005:3000"
     depends_on:

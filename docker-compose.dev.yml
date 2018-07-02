@@ -9,7 +9,7 @@ services:
     build: 
       context: .
       dockerfile: Dockerfile.dev
-    command: lein run 
+    command: bash -c "lein run migrate && lein run" 
     ports:
       - "3005:3000"
     depends_on:
