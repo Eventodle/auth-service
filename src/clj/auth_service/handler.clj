@@ -1,5 +1,5 @@
 (ns auth-service.handler
-  (:require 
+  (:require
             [auth-service.routes.services :refer [service-routes]]
             [auth-service.routes.oauth :refer [oauth-routes]]
             [compojure.core :refer [routes wrap-routes]]

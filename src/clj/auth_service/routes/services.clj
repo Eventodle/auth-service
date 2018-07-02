@@ -4,7 +4,15 @@
             [schema.core :as s]
             [compojure.api.meta :refer [restructure-param]]
             [buddy.auth.accessrules :refer [restrict]]
-            [buddy.auth :refer [authenticated?]]))
+            [buddy.hashers :as hashers]
+            [buddy.auth :refer [authenticated?]]
+            [buddy.sign.jwt :as jwt]
+            [auth-service.db.core :as db]))
+
+(defn authenticate-user [user-id pass]
+  (when-let [user (db/get-user {:id user-id})]
+    (when (hashers/check pass (:pass user))
+      (jwt/sign (dissoc user :pass) "secret"))))
 
 (defn access-error [_ _]
   (unauthorized {:error "unauthorized"}))
@@ -27,40 +35,19 @@
              :data {:info {:version "1.0.0"
                            :title "Sample API"
                            :description "Sample Services"}}}}
-  
+
   (GET "/authenticated" []
        :auth-rules authenticated?
        :current-user user
        (ok {:user user}))
+
+  (POST "/login" req
+    :return {:token s/Str}
+    :body-params [user-id :- String pass :- String]
+    :summary "User login handler"
+    (if-let [token (authenticate-user user-id pass)]
+      (ok {:token token})
+      (not-found "not found")))
+
   (context "/api" []
-    :tags ["thingie"]
-    
-    (GET "/plus" []
-      :return       Long
-      :query-params [x :- Long, {y :- Long 1}]
-      :summary      "x+y with query-parameters. y defaults to 1."
-      (ok (+ x y)))
-
-    (POST "/minus" []
-      :return      Long
-      :body-params [x :- Long, y :- Long]
-      :summary     "x-y with body-parameters."
-      (ok (- x y)))
-
-    (GET "/times/:x/:y" []
-      :return      Long
-      :path-params [x :- Long, y :- Long]
-      :summary     "x*y with path-parameters"
-      (ok (* x y)))
-
-    (POST "/divide" []
-      :return      Double
-      :form-params [x :- Long, y :- Long]
-      :summary     "x/y with form-parameters"
-      (ok (/ x y)))
-
-    (GET "/power" []
-      :return      Long
-      :header-params [x :- Long, y :- Long]
-      :summary     "x^y with header-parameters"
-      (ok (long (Math/pow x y))))))
+    :tags ["thingie"]))
