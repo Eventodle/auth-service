@@ -36,14 +36,20 @@
                  [selmer "1.11.7"]]
 
   :min-lein-version "2.0.0"
-  
   :source-paths ["src/clj"]
   :test-paths ["test/clj"]
   :resource-paths ["resources"]
   :target-path "target/%s/"
   :main ^:skip-aot auth-service.core
 
-  :plugins []
+  :plugins [[migratus-lein "0.4.1"]]
+  :migratus {:store :database
+             :migration-dir "migrations"
+             :db {:classname "com.mysql.jdbc.Driver"
+                  :subprotocol "postgres"
+                  :subname "//localhost/migratus"
+                  :user "root"
+                  :password ""}}
 
   :profiles
   {:uberjar {:omit-source true
@@ -61,8 +67,9 @@
                                  [prone "1.6.0"]
                                  [ring/ring-devel "1.6.3"]
                                  [ring/ring-mock "0.3.2"]]
-                  :plugins      [[com.jakemccrary/lein-test-refresh "0.19.0"]]
-                  
+                  :plugins      [[com.jakemccrary/lein-test-refresh "0.19.0"]
+                                 [lein-watch "0.0.2"]]
+
                   :source-paths ["env/dev/clj"]
                   :resource-paths ["env/dev/resources"]
                   :repl-options {:init-ns user}
@@ -71,4 +78,11 @@
    :project/test {:jvm-opts ["-Dconf=test-config.edn"]
                   :resource-paths ["env/test/resources"]}
    :profiles/dev {}
-   :profiles/test {}})
+   :profiles/test {}
+   :watch {
+           :rate 500 ;; check file every 500ms ('watchtower' is used internally)
+           :watchers {
+                      :compile {
+                                :watch-dirs ["src"]
+                                :file-patterns [#"\.clj"]
+                                :tasks ["compile"]}}}})
