@@ -43,9 +43,15 @@
                            :description "Sample Services"}}}}
 
   (GET "/authenticated" []
-       :auth-rules authenticated?
-       :current-user user
-       (ok {:user user}))
+    :return {:authenticated s/Bool}
+    :header-params [authorization :- String]
+    :summary "Authenticate JWT token"
+    (fn [req]
+      (let [auth-token (get-in (:headers req) ["authorization"])]
+        { :status 200
+          :headers {"Content-Type" "application/json" "Authorization" (str "Bearer " auth-token)}
+          :body { :authenticated true }
+        })))
 
   (POST "/login" req
     :return {:token s/Str}
