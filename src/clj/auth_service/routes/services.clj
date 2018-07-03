@@ -54,11 +54,14 @@
         })))
 
   (POST "/login" req
-    :return {:token s/Str}
+    :return {:logged s/Bool}
     :body-params [user-id :- String pass :- String]
     :summary "User login handler"
     (if-let [token (authenticate-user user-id pass)]
-      (ok {:token token})
+      { :status 200
+        :headers {"Content-Type" "application/json" "Authorization" (str "Bearer " token)}
+        :body { :logged true }
+      }
       (not-found "not found")))
 
   (context "/api" []
