@@ -10,9 +10,9 @@
             [buddy.sign.jwt :as jwt]
             [buddy.core.hash :as hash]
             [auth-service.db.core :as db]
-            [auth-service.config :refer [env]]))
+            [dotenv.core :as dotenv]))
 
-(def secret (hash/sha256 (env :jwt-private-key)))
+(def secret (hash/sha256 (dotenv/env :jwt-private-key)))
 
 (defn authenticate-user [user-id pass]
   (when-let [user (db/get-user {:id user-id})]
