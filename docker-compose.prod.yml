@@ -15,14 +15,14 @@ services:
     depends_on:
       - db
     env_file:
-      - .env
+      - .lein-env
 
   db:
     networks:
       - backend
     image: postgres
     env_file:
-      - .env
+      - .lein-env
     volumes:
       - ../data:/var/lib/postgresql/data
     ports:

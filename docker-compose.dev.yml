@@ -17,7 +17,7 @@ services:
     links:
       - db
     env_file:
-      - .env
+      - .lein-env
     volumes:
       - ./:/app
 
@@ -26,7 +26,7 @@ services:
       - backend
     image: postgres
     env_file:
-      - .env
+      - .lein-env
     ports:
       - "5432:5432"
     volumes:
