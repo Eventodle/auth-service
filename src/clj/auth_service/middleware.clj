@@ -3,45 +3,36 @@
             [auth-service.config :refer [env]]
             [ring-ttl-session.core :refer [ttl-memory-store]]
             [ring.middleware.defaults :refer [site-defaults wrap-defaults]]
-            [buddy.auth.middleware :refer [wrap-authentication wrap-authorization]]
-            [buddy.auth.accessrules :refer [restrict]]
-            [buddy.auth :refer [authenticated?]]
-            [buddy.auth.backends.session :refer [session-backend]]
-            [buddy.auth.backends.token :refer [jwe-backend]]
-            [buddy.sign.jwt :refer [encrypt]]
-            [buddy.core.nonce :refer [random-bytes]]
-            [clj-time.core :refer [plus now minutes]]))
+            [auth-service.db.core :as db]
+            [clj-time.core :as time]
+            [clj-time.coerce :as tc]
+            [buddy.core.hash :as hash]
+            [buddy.sign.jwt :as jwt]))
 
-(defn on-error [request response]
+(defn on-auth-error []
   {:status 403
-   :headers {}
-   :body (str "Access to " (:uri request) " is not authorized")})
+   :headers {"Content-Type" "application/json"}
+   :body {:error "Forbidden"}})
 
-(defn wrap-restricted [handler]
-  (restrict handler {:handler authenticated?
-                     :on-error on-error}))
-
-(def secret (random-bytes 32))
-
-(def token-backend
-  (jwe-backend {:secret secret
-                :options {:alg :a256kw
-                          :enc :a128gcm}}))
-
-(defn token [username]
-  (let [claims {:user (keyword username)
-                :exp (plus (now) (minutes 60))}]
-    (encrypt claims secret {:alg :a256kw :enc :a128gcm})))
+(defn on-auth-success [token]
+  { :status 200
+    :headers {"Content-Type" "application/json" "Authorization" (str "Bearer " token)}
+    :body { :authenticated true }
+  })
 
 (defn wrap-auth [handler]
-  (let [backend token-backend]
-    (-> handler
-        (wrap-authentication backend)
-        (wrap-authorization backend))))
+  (fn [request]
+    (try
+      (let [auth-token (get-in (:headers request) ["authorization"])
+            data (jwt/decrypt auth-token (hash/sha256 (:jwt-private-key env)) {:alg :dir :enc :a128cbc-hs256})
+            valid-user? (not (nil? (db/get-user {:id (:id data)})))
+            expired? (> (tc/to-long (time/now)) (:exp data))]
+        (if (and valid-user? (not expired?)) (on-auth-success auth-token) (on-auth-error)))
+      (catch Exception ex
+        (on-auth-error)))))
 
 (defn wrap-base [handler]
   (-> ((:middleware defaults) handler)
-      wrap-auth
       (wrap-defaults
         (-> site-defaults
             (assoc-in [:security :anti-forgery] false)
