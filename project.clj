@@ -35,7 +35,8 @@
                  [ring/ring-defaults "0.3.2"]
                  [selmer "1.11.7"]
                  [com.knrz/dotenv "0.1.0"]]
-
+:profiles {:dev {:dependencies [[speclj "3.3.2"]]}}
+  :plugins [[speclj "3.3.2"]]
   :min-lein-version "2.0.0"
   :source-paths ["src/clj"]
   :test-paths ["test/clj"]
