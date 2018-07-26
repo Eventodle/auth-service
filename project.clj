@@ -35,8 +35,6 @@
                  [ring/ring-defaults "0.3.2"]
                  [selmer "1.11.7"]
                  [com.knrz/dotenv "0.1.0"]]
-:profiles {:dev {:dependencies [[speclj "3.3.2"]]}}
-  :plugins [[speclj "3.3.2"]]
   :min-lein-version "2.0.0"
   :source-paths ["src/clj"]
   :test-paths ["test/clj"]
@@ -44,7 +42,8 @@
   :target-path "target/%s/"
   :main ^:skip-aot auth-service.core
 
-  :plugins [[migratus-lein "0.4.1"]]
+  :plugins [[migratus-lein "0.4.1"]
+            [speclj "3.3.2"]]
   :migratus {:store :database
              :migration-dir "migrations"
              :db {:classname "com.mysql.jdbc.Driver"
@@ -79,7 +78,7 @@
                                (pjstadig.humane-test-output/activate!)]}
    :project/test {:jvm-opts ["-Dconf=test-config.edn"]
                   :resource-paths ["env/test/resources"]}
-   :profiles/dev {}
+   :profiles/dev {:dependencies [[speclj "3.3.2"]]}
    :profiles/test {}
    :watch {
            :rate 500 ;; check file every 500ms ('watchtower' is used internally)
