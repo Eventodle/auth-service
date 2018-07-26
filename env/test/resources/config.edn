@@ -1,1 +1,3 @@
-{}
+{
+  :database-url "postgresql://db-test/auth_service_test?user=auth&password=auth"
+ }

@@ -31,3 +31,14 @@ services:
       - "5432:5432"
     volumes:
       - ../data:/var/lib/postgresql/data
+
+  db-test:
+    networks:
+      - backend
+    image: postgres
+    env_file:
+      - .test-env
+    ports:
+      - "5555:5432"
+    volumes:
+      - ../data:/var/lib/postgresql/data-test
