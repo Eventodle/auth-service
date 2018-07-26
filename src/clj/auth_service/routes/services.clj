@@ -20,10 +20,9 @@
   (let [user-id (:user-id (:body-params req))
         pass (:pass (:body-params req))]
     (if-let [token (authenticate-user user-id pass)]
-      { :status 200
-        :headers {"Content-Type" "application/json" "Authorization" (str "Bearer " token)}
-        :body { :logged-in true }
-      }
+      {:status 200
+       :headers {"Content-Type" "application/json" "Authorization" (str "Bearer " token)}
+       :body {:logged-in true}}
       (not-found "not found"))))
 
 (defapi service-routes

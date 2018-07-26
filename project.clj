@@ -22,6 +22,7 @@
                  [metosin/ring-http-response "0.9.0"]
                  [mount "0.1.12"]
                  [org.clojure/clojure "1.9.0"]
+                 [org.clojure/data.json "0.2.6"]
                  [org.clojure/tools.cli "0.3.7"]
                  [org.clojure/tools.logging "0.4.1"]
                  [org.postgresql/postgresql "42.2.2"]
