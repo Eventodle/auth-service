@@ -9,6 +9,7 @@
             [buddy.core.hash :as hash]
             [auth-service.config :refer [env]]
             [auth-service.db.core :as db]
+            [auth-service.schemas.user :as us]
             [auth-service.middleware :as middleware]))
 
 (defn authenticate-user [email pass]
@@ -43,6 +44,12 @@
     :body-params [email :- String pass :- String]
     :summary "User login handler"
     login)
+
+  (POST "/register" []
+    :return us/RegisterUser
+    :body [user us/RegisterUser]
+    :summary "User login handler"
+    (created "url" user))
 
   (context "/api" []
     :tags ["thingie"]))

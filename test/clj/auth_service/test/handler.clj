@@ -29,7 +29,7 @@
   (testing "login successful with user and password"
     (let [response (app (-> (request :post "/login")
                             (content-type "application/json")
-                            (body (json/write-str {:user-id "first" :pass "admin1234"}))))
+                            (body (json/write-str {:email "foo@bar.com" :pass "admin1234"}))))
           response-body (slurp (:body response))]
       (is (= {:logged-in true} (json/read-str response-body :key-fn keyword)))
       (is (= 200 (:status response)))))
@@ -37,14 +37,36 @@
   (testing "login unsuccessful user does not exist"
     (let [response (app (-> (request :post "/login")
                             (content-type "application/json")
-                            (body (json/write-str {:user-id "second" :pass "foo"}))))]
+                            (body (json/write-str {:email "first@bar.com" :pass "foo"}))))]
       (is (= 404 (:status response)))))
 
   (testing "login unsuccessful user exists with wrong password"
     (let [response (app (-> (request :post "/login")
                             (content-type "application/json")
-                            (body (json/write-str {:user-id "first" :pass "foo"}))))]
+                            (body (json/write-str {:email "foo@bar.com" :pass "foo"}))))]
       (is (= 404 (:status response)))))
+
+  (testing "register successful with user data"
+    (let [response (app (-> (request :post "/register")
+                            (content-type "application/json")
+                            (body (json/write-str {:first_name "first"
+                                                   :last_name "last"
+                                                   :email "first@gmail.com"
+                                                   :pass "admin1234"
+                                                   :pass_confirmation "admin1234"}))))
+         response-body (slurp (:body response))]
+      (is (= 201 (:status response)))))
+
+  (testing "register unsuccessful when password confirmation is wrong"
+    (let [response (app (-> (request :post "/register")
+                            (content-type "application/json")
+                            (body (json/write-str {:first_name "first"
+                                                   :last_name "last"
+                                                   :email "first@gmail.com"
+                                                   :pass "admin1234"
+                                                   :pass_confirmation "fuzzy"}))))
+         response-body (slurp (:body response))]
+      (is (= 400 (:status response)))))
 
 
   )
