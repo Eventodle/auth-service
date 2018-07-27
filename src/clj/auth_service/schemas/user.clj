@@ -8,7 +8,7 @@
 (s/defschema RegisterUser
   (s/both
     {:first_name min-length
-     :last_name s/Str
+     :last_name min-length
      :pass s/Str
      :pass_confirmation s/Str
      :email s/Str}

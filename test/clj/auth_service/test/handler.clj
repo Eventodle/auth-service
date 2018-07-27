@@ -81,4 +81,16 @@
          response-body (slurp (:body response))]
       (is (= {:errors (not-enough-length :first_name)} (json/read-str response-body :key-fn keyword)))
       (is (= 400 (:status response)))))
+
+  (testing "register unsuccessful when last name is empty"
+    (let [response (app (-> (request :post "/register")
+                            (content-type "application/json")
+                            (body (json/write-str {:first_name "first"
+                                                   :last_name "la"
+                                                   :email "first@gmail.com"
+                                                   :pass "admin1234"
+                                                   :pass_confirmation "admin1234"}))))
+         response-body (slurp (:body response))]
+      (is (= {:errors (not-enough-length :last_name)} (json/read-str response-body :key-fn keyword)))
+      (is (= 400 (:status response)))))
   )
