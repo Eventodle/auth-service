@@ -6,6 +6,7 @@
             [auth-service.db.core :refer [*db*] :as db]
             [luminus-migrations.core :as migrations]
             [auth-service.config :refer [env]]
+            [auth-service.routes.errors :refer [passwords-do-not-match-error]]
             [mount.core :as mount]))
 
 (use-fixtures
@@ -66,6 +67,7 @@
                                                    :pass "admin1234"
                                                    :pass_confirmation "fuzzy"}))))
          response-body (slurp (:body response))]
+      (is (= {:errors passwords-do-not-match-error} (json/read-str response-body :key-fn keyword)))
       (is (= 400 (:status response)))))
 
 

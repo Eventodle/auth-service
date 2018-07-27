@@ -10,7 +10,10 @@
             [auth-service.config :refer [env]]
             [auth-service.db.core :as db]
             [auth-service.schemas.user :as us]
-            [auth-service.middleware :as middleware]))
+            [auth-service.middleware :as middleware]
+            [compojure.api.exception :as ex]
+            [auth-service.routes.errors :refer [bad-request-handler]]))
+
 
 (defn authenticate-user [email pass]
   (when-let [user (db/get-user-by-email {:email email})]
@@ -27,11 +30,12 @@
       (not-found "not found"))))
 
 (defapi service-routes
-  {:swagger {:ui "/swagger-ui"
-             :spec "/swagger.json"
-             :data {:info {:version "1.0.0"
-                           :title "Sample API"
-                           :description "Sample Services"}}}}
+  {:exceptions {:handlers {::ex/request-validation (bad-request-handler bad-request)}}
+   :swagger {:ui "/swagger-ui"
+            :spec "/swagger.json"
+            :data {:info {:version "1.0.0"
+                          :title "Sample API"
+                          :description "Sample Services"}}}}
 
   (GET "/authenticated" []
     :middleware [middleware/wrap-auth]

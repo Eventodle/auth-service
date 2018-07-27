@@ -9,7 +9,7 @@
      :pass_confirmation s/Str
      :email s/Str}
     (s/pred (fn [{:keys [pass pass_confirmation]}]
-      (= pass pass_confirmation)) "Password confirmation does not match.")
+      (= pass pass_confirmation)) 'PasswordDoesNotMatch)
   )
 )
 

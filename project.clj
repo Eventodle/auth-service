@@ -35,6 +35,7 @@
                  [ring/ring-core "1.6.3"]
                  [ring/ring-defaults "0.3.2"]
                  [selmer "1.11.7"]
+                 [siili/humanize "0.1.1"]
                  [com.knrz/dotenv "0.1.0"]]
   :min-lein-version "2.0.0"
   :source-paths ["src/clj"]
