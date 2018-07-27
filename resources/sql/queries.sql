@@ -19,3 +19,8 @@ WHERE id = :id
 -- :doc deletes a user record given the id
 DELETE FROM users
 WHERE id = :id
+
+-- :name get-user-by-email :? :1
+-- :doc retrieves a user record given the email
+SELECT * FROM users
+WHERE email = :email

@@ -11,15 +11,15 @@
             [auth-service.db.core :as db]
             [auth-service.middleware :as middleware]))
 
-(defn authenticate-user [user-id pass]
-  (when-let [user (db/get-user {:id user-id})]
+(defn authenticate-user [email pass]
+  (when-let [user (db/get-user-by-email {:email email})]
     (when (hashers/check pass (:pass user))
       (jwt/encrypt (merge {:exp (tc/to-long (time/plus (time/now) (time/days 1)))}
                           (dissoc user :pass)) (hash/sha256 (:jwt-private-key env)) {:alg :dir :enc :a128cbc-hs256}))))
 (defn login [req]
-  (let [user-id (:user-id (:body-params req))
+  (let [email (:email (:body-params req))
         pass (:pass (:body-params req))]
-    (if-let [token (authenticate-user user-id pass)]
+    (if-let [token (authenticate-user email pass)]
       {:status 200
        :headers {"Content-Type" "application/json" "Authorization" (str "Bearer " token)}
        :body {:logged-in true}}
@@ -40,7 +40,7 @@
 
   (POST "/login" []
     :return {:logged-in s/Bool}
-    :body-params [user-id :- String pass :- String]
+    :body-params [email :- String pass :- String]
     :summary "User login handler"
     login)
 
