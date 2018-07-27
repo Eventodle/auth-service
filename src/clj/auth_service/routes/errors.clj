@@ -1,7 +1,11 @@
 (ns auth-service.routes.errors
-  (:require [humanize.schema :as humanize]))
+  (:require [humanize.schema :as humanize]
+            [clojure.string :as str]))
 
-(def passwords-do-not-match-error "Password and password confirmation don't match")
+(def passwords-do-not-match "Password and password confirmation don't match")
+
+(defn not-enough-length [field]
+  (str (str/capitalize (str/join " " (str/split (name field) #"_"))) " does not have the minimum size"))
 
 (defn humanize-schema-exception [^Exception e]
   (if (instance? schema.utils.ErrorContainer (ex-data e))
@@ -9,8 +13,10 @@
                       (fn [x]
                         (clojure.core.match/match
                          x
+                         ['not ['NotEnoughLength value]]
+                         (not-enough-length (first (map key (:error (ex-data e)))))
                          ['not ['PasswordDoesNotMatch pass]]
-                         passwords-do-not-match-error
+                         passwords-do-not-match
                          :else x)))))
 
 (defn bad-request-handler
@@ -18,4 +24,6 @@
   [f]
   (fn [^Exception e data request]
     (let [message (humanize-schema-exception e)]
-      (f {:errors message}))))
+      (f (cond
+           (map? message) {:errors (first (vals message))}
+           :else {:errors message})))))

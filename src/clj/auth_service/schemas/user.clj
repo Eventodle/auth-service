@@ -1,9 +1,13 @@
 (ns auth-service.schemas.user 
   (:require [schema.core :as s]))
 
+
+(def min-length
+  (s/constrained s/Str #(> (count %) 3) 'NotEnoughLength))
+
 (s/defschema RegisterUser
   (s/both
-    {:first_name s/Str
+    {:first_name min-length
      :last_name s/Str
      :pass s/Str
      :pass_confirmation s/Str

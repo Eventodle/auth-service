@@ -6,7 +6,7 @@
             [auth-service.db.core :refer [*db*] :as db]
             [luminus-migrations.core :as migrations]
             [auth-service.config :refer [env]]
-            [auth-service.routes.errors :refer [passwords-do-not-match-error]]
+            [auth-service.routes.errors :refer [passwords-do-not-match not-enough-length]]
             [mount.core :as mount]))
 
 (use-fixtures
@@ -67,8 +67,18 @@
                                                    :pass "admin1234"
                                                    :pass_confirmation "fuzzy"}))))
          response-body (slurp (:body response))]
-      (is (= {:errors passwords-do-not-match-error} (json/read-str response-body :key-fn keyword)))
+      (is (= {:errors passwords-do-not-match} (json/read-str response-body :key-fn keyword)))
       (is (= 400 (:status response)))))
 
-
+  (testing "register unsuccessful when first name is empty"
+    (let [response (app (-> (request :post "/register")
+                            (content-type "application/json")
+                            (body (json/write-str {:first_name ""
+                                                   :last_name "last"
+                                                   :email "first@gmail.com"
+                                                   :pass "admin1234"
+                                                   :pass_confirmation "admin1234"}))))
+         response-body (slurp (:body response))]
+      (is (= {:errors (not-enough-length :first_name)} (json/read-str response-body :key-fn keyword)))
+      (is (= 400 (:status response)))))
   )
