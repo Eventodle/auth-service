@@ -6,6 +6,8 @@
 
 (def email-invalid "E-mail invalid")
 
+(def password-invalid "Password invalid")
+
 (defn not-enough-length [field]
   (str (str/capitalize (str/join " " (str/split (name field) #"_"))) " does not have the minimum size"))
 
@@ -21,6 +23,8 @@
                          passwords-do-not-match
                          ['not ['InvalidEmail email]]
                          email-invalid
+                         ['not ['InvalidPassword pass]]
+                         password-invalid
                          :else x)))))
 
 (defn bad-request-handler
