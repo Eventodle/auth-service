@@ -6,7 +6,7 @@
             [auth-service.db.core :refer [*db*] :as db]
             [luminus-migrations.core :as migrations]
             [auth-service.config :refer [env]]
-            [auth-service.routes.errors :refer [passwords-do-not-match not-enough-length]]
+            [auth-service.routes.errors :refer [passwords-do-not-match not-enough-length email-invalid]]
             [mount.core :as mount]))
 
 (use-fixtures
@@ -92,5 +92,29 @@
                                                    :pass_confirmation "admin1234"}))))
          response-body (slurp (:body response))]
       (is (= {:errors (not-enough-length :last_name)} (json/read-str response-body :key-fn keyword)))
+      (is (= 400 (:status response)))))
+
+  (testing "register unsuccessful when email is smaller than 5"
+    (let [response (app (-> (request :post "/register")
+                            (content-type "application/json")
+                            (body (json/write-str {:first_name "first"
+                                                   :last_name "la"
+                                                   :email "f@g.e"
+                                                   :pass "admin1234"
+                                                   :pass_confirmation "admin1234"}))))
+         response-body (slurp (:body response))]
+      (is (= {:errors email-invalid} (json/read-str response-body :key-fn keyword)))
+      (is (= 400 (:status response)))))
+
+  (testing "register unsuccessful when email has an invalid format"
+    (let [response (app (-> (request :post "/register")
+                            (content-type "application/json")
+                            (body (json/write-str {:first_name "first"
+                                                   :last_name "last"
+                                                   :email "invalid"
+                                                   :pass "admin1234"
+                                                   :pass_confirmation "admin1234"}))))
+         response-body (slurp (:body response))]
+      (is (= {:errors email-invalid} (json/read-str response-body :key-fn keyword)))
       (is (= 400 (:status response)))))
   )

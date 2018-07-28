@@ -4,6 +4,8 @@
 
 (def passwords-do-not-match "Password and password confirmation don't match")
 
+(def email-invalid "E-mail invalid")
+
 (defn not-enough-length [field]
   (str (str/capitalize (str/join " " (str/split (name field) #"_"))) " does not have the minimum size"))
 
@@ -17,6 +19,8 @@
                          (not-enough-length (first (map key (:error (ex-data e)))))
                          ['not ['PasswordDoesNotMatch pass]]
                          passwords-do-not-match
+                         ['not ['InvalidEmail email]]
+                         email-invalid
                          :else x)))))
 
 (defn bad-request-handler
