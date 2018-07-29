@@ -12,7 +12,7 @@
             [auth-service.schemas.user :as us]
             [auth-service.middleware :as middleware]
             [compojure.api.exception :as ex]
-            [auth-service.routes.errors :refer [bad-request-handler]]))
+            [auth-service.routes.errors :refer [unprocessable-entity-handler]]))
 
 
 (defn authenticate-user [email pass]
@@ -30,7 +30,7 @@
       (not-found "not found"))))
 
 (defapi service-routes
-  {:exceptions {:handlers {::ex/request-validation (bad-request-handler bad-request)}}
+  {:exceptions {:handlers {::ex/request-validation (unprocessable-entity-handler unprocessable-entity)}}
    :swagger {:ui "/swagger-ui"
             :spec "/swagger.json"
             :data {:info {:version "1.0.0"
@@ -52,7 +52,7 @@
   (POST "/register" []
     :return us/RegisterUser
     :body [user us/RegisterUser]
-    :summary "User login handler"
+    :summary "User register handler"
     (created "url" user))
 
   (context "/api" []

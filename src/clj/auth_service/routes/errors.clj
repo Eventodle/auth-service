@@ -1,6 +1,7 @@
 (ns auth-service.routes.errors
   (:require [humanize.schema :as humanize]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [clojure.test :as ct]))
 
 (def passwords-do-not-match "Password and password confirmation don't match")
 
@@ -18,20 +19,24 @@
                         (clojure.core.match/match
                          x
                          ['not ['NotEnoughLength value]]
-                         (not-enough-length (first (map key (:error (ex-data e)))))
+                           ;;(not-enough-length (first (map key (:error (ex-data e)))))
+                          not-enough-length
                          ['not ['PasswordDoesNotMatch pass]]
-                         passwords-do-not-match
+                           passwords-do-not-match
                          ['not ['InvalidEmail email]]
-                         email-invalid
+                           email-invalid
                          ['not ['InvalidPassword pass]]
-                         password-invalid
+                           password-invalid
                          :else x)))))
 
-(defn bad-request-handler
+(defn build-error-response [message]
+  {:source {:pointer "/data/attributes/"} :title "Invalid Attribute" :detail message})
+
+(defn unprocessable-entity-handler
   "Handles bad requests."
   [f]
   (fn [^Exception e data request]
     (let [message (humanize-schema-exception e)]
-      (f (cond
-           (map? message) {:errors (first (vals message))}
-           :else {:errors message})))))
+      (f {:errors (cond
+                    (map? message) (map (fn [[key val]] (build-error-response (cond (ct/function? val) (val key) :else val))) message)
+                    :else [(build-error-response message)])}))))

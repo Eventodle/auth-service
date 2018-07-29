@@ -6,7 +6,7 @@
             [auth-service.db.core :refer [*db*] :as db]
             [luminus-migrations.core :as migrations]
             [auth-service.config :refer [env]]
-            [auth-service.routes.errors :refer [passwords-do-not-match not-enough-length email-invalid password-invalid]]
+            [auth-service.routes.errors :refer [build-error-response passwords-do-not-match not-enough-length email-invalid password-invalid]]
             [mount.core :as mount]))
 
 (use-fixtures
@@ -67,8 +67,8 @@
                                                    :pass "@Admin1234"
                                                    :pass_confirmation "@Fussy1234"}))))
          response-body (slurp (:body response))]
-      (is (= {:errors passwords-do-not-match} (json/read-str response-body :key-fn keyword)))
-      (is (= 400 (:status response)))))
+      (is (= {:errors [(build-error-response passwords-do-not-match)]} (json/read-str response-body :key-fn keyword)))
+      (is (= 422 (:status response)))))
 
   (testing "register unsuccessful when first name is empty"
     (let [response (app (-> (request :post "/register")
@@ -79,8 +79,8 @@
                                                    :pass "@Admin1234"
                                                    :pass_confirmation "@Admin1234"}))))
          response-body (slurp (:body response))]
-      (is (= {:errors (not-enough-length :first_name)} (json/read-str response-body :key-fn keyword)))
-      (is (= 400 (:status response)))))
+      (is (= {:errors [(build-error-response (not-enough-length :first_name))]} (json/read-str response-body :key-fn keyword)))
+      (is (= 422 (:status response)))))
 
   (testing "register unsuccessful when last name is empty"
     (let [response (app (-> (request :post "/register")
@@ -91,20 +91,20 @@
                                                    :pass "@Admin1234"
                                                    :pass_confirmation "@Admin1234"}))))
          response-body (slurp (:body response))]
-      (is (= {:errors (not-enough-length :last_name)} (json/read-str response-body :key-fn keyword)))
-      (is (= 400 (:status response)))))
+      (is (= {:errors [(build-error-response (not-enough-length :last_name))]} (json/read-str response-body :key-fn keyword)))
+      (is (= 422 (:status response)))))
 
   (testing "register unsuccessful when email is smaller than 5"
     (let [response (app (-> (request :post "/register")
                             (content-type "application/json")
                             (body (json/write-str {:first_name "first"
-                                                   :last_name "la"
+                                                   :last_name "last"
                                                    :email "f@g.e"
                                                    :pass "@Admin1234"
                                                    :pass_confirmation "@Admin1234"}))))
          response-body (slurp (:body response))]
-      (is (= {:errors email-invalid} (json/read-str response-body :key-fn keyword)))
-      (is (= 400 (:status response)))))
+      (is (= {:errors [(build-error-response email-invalid)]} (json/read-str response-body :key-fn keyword)))
+      (is (= 422 (:status response)))))
 
   (testing "register unsuccessful when email with invalid format"
     (let [response (app (-> (request :post "/register")
@@ -115,8 +115,8 @@
                                                    :pass "@Admin1234"
                                                    :pass_confirmation "@Admin1234"}))))
          response-body (slurp (:body response))]
-      (is (= {:errors email-invalid} (json/read-str response-body :key-fn keyword)))
-      (is (= 400 (:status response)))))
+      (is (= {:errors [(build-error-response email-invalid)]} (json/read-str response-body :key-fn keyword)))
+      (is (= 422 (:status response)))))
 
   (testing "register unsuccessful when password is smaller than 7"
     (let [response (app (-> (request :post "/register")
@@ -127,8 +127,8 @@
                                                    :pass "@A1234"
                                                    :pass_confirmation "@A1234"}))))
          response-body (slurp (:body response))]
-      (is (= {:errors password-invalid} (json/read-str response-body :key-fn keyword)))
-      (is (= 400 (:status response)))))
+      (is (= {:errors [(build-error-response password-invalid)]} (json/read-str response-body :key-fn keyword)))
+      (is (= 422 (:status response)))))
 
   (testing "register unsuccessful when password with invalid format"
     (let [response (app (-> (request :post "/register")
@@ -139,6 +139,21 @@
                                                    :pass "admin1234"
                                                    :pass_confirmation "admin1234"}))))
          response-body (slurp (:body response))]
-      (is (= {:errors password-invalid} (json/read-str response-body :key-fn keyword)))
-      (is (= 400 (:status response)))))
+      (is (= {:errors [(build-error-response password-invalid)]} (json/read-str response-body :key-fn keyword)))
+      (is (= 422 (:status response)))))
+
+  (testing "register unsuccessful when multi validation fail"
+    (let [response (app (-> (request :post "/register")
+                            (content-type "application/json")
+                            (body (json/write-str {:first_name ""
+                                                   :last_name ""
+                                                   :email "firstgoogle.com"
+                                                   :pass "admin1234"
+                                                   :pass_confirmation "admin1234"}))))
+         response-body (slurp (:body response))]
+      (is (= {:errors [(build-error-response email-invalid)
+                       (build-error-response (not-enough-length :first_name))
+                       (build-error-response (not-enough-length :last_name))
+                       (build-error-response password-invalid)]} (json/read-str response-body :key-fn keyword)))
+      (is (= 422 (:status response)))))
   )

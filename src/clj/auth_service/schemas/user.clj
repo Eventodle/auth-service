@@ -14,23 +14,23 @@
   (s/pred #(matches r %) pred-name))
 
 (def min-length
-  (s/constrained s/Str #(length-greater 3 %) 'NotEnoughLength))
+  (s/both s/Str (length-greater-pred 3 'NotEnoughLength)))
 
 (def email
   (let [pred-name 'InvalidEmail]
-    (s/both (length-greater-pred 5 pred-name) (matches-pred #".+\@.+\..+" pred-name))))
+    (s/both s/Str (length-greater-pred 5 pred-name) (matches-pred #".+\@.+\..+" pred-name))))
 
 (def password
   (let [pred-name 'InvalidPassword]
-    (s/both (length-greater-pred 7 pred-name) (matches-pred #"^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{8,}$" pred-name))))
+    (s/both s/Str (length-greater-pred 7 pred-name) (matches-pred #"^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{8,}$" pred-name))))
 
 (s/defschema RegisterUser
   (s/both
     {:first_name min-length
      :last_name min-length
+     :email email
      :pass password
-     :pass_confirmation s/Str
-     :email email}
+     :pass_confirmation s/Str}
     (s/pred (fn [{:keys [pass pass_confirmation]}]
       (= pass pass_confirmation)) 'PasswordDoesNotMatch)
   )
